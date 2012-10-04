@@ -80,7 +80,7 @@ MAKE_TEMPLATE = protect-against-1.5
 #myfunc.o: myapi.h myfunc.c
 #	$(CC) $(CPPFLAGS) $(CFLAGS) -DMY_SWITCH -o $@ -c myfunc.c
 
-tests:
+tests: $(PKG_DLL)
 	$(Y_EXE) -batch nfft-tests.i
 
 release: $(RELEASE_NAME)

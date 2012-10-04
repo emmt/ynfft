@@ -1,0 +1,49 @@
+YNFFT is a Yorick plugin for NFFT (nonequispaced fast Fourier transform).
+
+Installation
+============
+
+1. Make sure you have installed the NFFT library
+   <http://www-user.tu-chemnitz.de/~potts/nfft/>, the FFTW library
+   <http://www.fftw.org/> and Yorick <http://yorick.github.com/>.
+
+2. Go to the YNFFT directory:
+
+   > cd $DIR/ynfft-$VERSION
+
+3. Edit the file "Makefile" and check the values of the variables PKG_DEPLIBS,
+   PKG_CFLAGS and PKG_LDFLAGS; for instance, assuming PREFIX is a variable
+   with the top directory where FFTW and NFFT libraries are installed:
+
+   PKG_DEPLIBS=-L$(PREFIX)/lib -lnfft3 -lfftw3
+   PKG_CFLAGS=-I$(PREFIX)/include
+   PKG_LDFLAGS=
+
+4. Update the paths in the file "Makefile" for compilation by executing the
+   following command:
+
+   > yorick -batch make.i
+
+   where "yorick" can be replaced by the full path to your Yorick interpreter
+   if not installed in a standard location.
+
+5. Optionally, check the plugin:
+
+   > make tests
+
+   You may have to set some environment variable for the dynamic loader
+   (LD_LIBRARY_PATH on Linux) if the NFFT library is installed in a
+   non-standard location, e.g.:
+
+   > LD_LIBRARY_PATH=$PREFIX/lib make tests
+
+6. Finally, install the plugin:
+
+   > make install
+
+
+Credits
+=======
+ * Yorick <http://yorick.github.com/>
+ * NFFT library <http://www-user.tu-chemnitz.de/~potts/nfft/>
+ * FFTW library <http://www.fftw.org/>

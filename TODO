@@ -1,0 +1,6 @@
+
+* allow for multiple threads
+
+  Simply call:
+    fftw_plan_with_nthreads(nthreads);
+  before calling nfft_init or nfft_init_guru which allocate the FFTW plans.

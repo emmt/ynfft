@@ -3,11 +3,11 @@ YNFFT is a Yorick plugin for NFFT (nonequispaced fast Fourier transform).
 Installation
 ============
 
-1. Make sure you have installed the NFFT library
-   <http://www-user.tu-chemnitz.de/~potts/nfft/>, the FFTW library
-   <http://www.fftw.org/> and Yorick <http://yorick.github.com/>.
+1. Make sure you have installed the NFFT library from
+   <http://www-user.tu-chemnitz.de/~potts/nfft/>, the FFTW library from
+   <http://www.fftw.org/> and Yorick from <http://yorick.github.com/>.
 
-2. Go to the YNFFT directory:
+2. Go to the YNFFT directory (where this README file is located):
 
    > cd $DIR/ynfft-$VERSION
 

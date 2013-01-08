@@ -50,7 +50,8 @@
  *    x_yorick(j,t) = t-th coordinate of j-th node
  *                  = x_nfft[(rank - t) + (j - 1)*rank]
  *
- * with t = 1, ..., rank and j = 1, ..., num_nodes (beware of the bounds of these ranges).
+ * with t = 1, ..., rank and j = 1, ..., num_nodes (beware of the bounds of
+ * these ranges).
  *
  * Using 0-based indices, this leads to:
  *

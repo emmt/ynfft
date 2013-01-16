@@ -331,6 +331,17 @@ func nfft_full_matrix(op, mode)
   return a;
 }
 
+extern nfft_mira3d_new;
+/* DOCUMENT H = nfft_mira3d_new(u, v, w, pixelsize, nx, ny, wlist)
+
+   U, V and W are the spatial frequency coordinates and wavelength they must
+   all be of the same size and in compatible units
+
+   WLIST = list of model wavelengths (must be in ascending order)
+     
+   SEE ALSO: nfft_new.
+ */
+
 /*
  * Local Variables:
  * mode: Yorick

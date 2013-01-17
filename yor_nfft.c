@@ -1488,57 +1488,59 @@ static long hunt(const double x[], long n, double xp, long ip)
        x[h-1] >= xp > x[h], as x is ascending or descending
      The value 0 or n will be returned if xp lies outside the interval.
    */
-  int ascend= x[n-1]>x[0];
   long jl, ju;
+  int ascend = (x[n-1] > x[0]);
 
-  if (ip<1 || ip>n-1) {
-    /* caller has declined to make an initial guess, so fall back to
-       garden variety bisection method */
-    if ((xp>=x[n-1]) == ascend) return n;
-    if ((xp<x[0]) == ascend) return 0;
-    jl= 0;
-    ju= n-1;
-
+  if (ip < 1 || ip > n - 1) {
+    /* Caller has declined to make an initial guess, so fall back to garden
+       variety bisection method. */
+    if ((xp >= x[n-1]) == ascend) return n;
+    if ((xp < x[0]) == ascend) return 0;
+    jl = 0;
+    ju = n - 1;
   } else {
-    /* search from initial guess ip in ever increasing steps to bracket xp */
-    int inc= 1;
-    jl= ip;
-    if ((xp>=x[ip]) == ascend) { /* search toward larger index values */
-      if (ip==n-1) return n;
-      jl= ip;
-      ju= ip+inc;
-      while ((xp>=x[ju]) == ascend) {
-        jl= ju;
-        inc+= inc;
-        ju+= inc;
-        if (ju>=n) {
-          if ((xp>=x[n-1]) == ascend) return n;
-          ju= n;
+    /* Search from initial guess IP in ever increasing steps to bracket XP. */
+    long inc = 1;
+    jl = ip;
+    if ((xp >= x[ip]) == ascend) {
+      /* Search toward larger index values. */
+      if (ip == n - 1) return n;
+      jl = ip;
+      ju = ip + inc;
+      while ((xp >= x[ju]) == ascend) {
+        jl = ju;
+        inc += inc;
+        ju += inc;
+        if (ju >= n) {
+          if ((xp >= x[n-1]) == ascend) return n;
+          ju = n;
           break;
         }
       }
-    } else {                     /* search toward smaller index values */
-      if (ip==0) return 0;
-      ju= ip;
-      jl= ip-inc;
-      while ((xp<x[jl]) == ascend) {
-        ju= jl;
-        inc+= inc;
-        jl-= inc;
-        if (jl<0) {
-          if ((xp<x[0]) == ascend) return 0;
-          jl= 0;
+    } else {
+      /* Search toward smaller index values. */
+      if (ip == 0) return 0;
+      ju = ip;
+      jl = ip - inc;
+      while ((xp < x[jl]) == ascend) {
+        ju = jl;
+        inc += inc;
+        jl -= inc;
+        if (jl < 0) {
+          if ((xp < x[0]) == ascend) return 0;
+          jl = 0;
           break;
         }
       }
     }
   }
 
-  /* have x[jl]<=xp<x[ju] for ascend, x[jl]>=xp>x[ju] for !ascend */
-  while (ju-jl > 1) {
-    ip= (jl+ju)>>1;
-    if ((xp>=x[ip]) == ascend) jl= ip;
-    else ju= ip;
+  /* Have x[jl] <= xp < x[ju] for ascend; otherwise,
+     have x[jl] >= xp > x[ju]. */
+  while (ju - jl > 1) {
+    ip = (jl + ju) >> 1;
+    if ((xp >= x[ip]) == ascend) jl = ip;
+    else ju = ip;
   }
 
   return ju;
@@ -1555,7 +1557,6 @@ static void *p_new(size_t size)
   }
   return ptr;
 }
-
 
 /*
  * Local Variables:

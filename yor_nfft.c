@@ -1293,14 +1293,14 @@ void Y_nfft_mira3d_new(int argc)
   m3d_op_sub_t *s0, *s1;
   double pixelsize;
   long m, mp, nx, ny, nw;
-  long j, k, k0, i0, i1;
+  long j, k, k0, k1, i0, i1;
   long dim;
   int monochromatic;
   int iarg = argc;
   double cutoff, min_dim, ovr_fact;
   unsigned int nfft_flags;
   unsigned int fftw_flags;
-printf("begin\n");
+
   /* Set up defaults. */
   INITIALIZE;
   cutoff = default_cutoff;
@@ -1343,7 +1343,7 @@ printf("begin\n");
     }
   }
 
-  printf("arg parsed\n");
+
   /* Compute oversampled dimension. */
   min_dim = ovr_fact*MAX(nx, ny);
   dim = best_fft_length((long)min_dim);
@@ -1367,25 +1367,26 @@ printf("begin\n");
   op->k0 = NEW(long, m);
   op->i0 = NEW(long, m);
   op->i1 = NEW(long, m);
-printf("object created\n");
+
   /* Initialize the wavelengths of the sub-planes. */
   for (k = 0; k < nw; ++k) {
     op->sub[k].w = wlist[k];
   }
-
+  
   /* Build interpolator. */
-  k0 = nw/2;
+  k1 = -1;
   for (j = 0; j < m; ++j) {
-    k0 = hunt(wlist, nw, w[j], k0);
+    k1 = hunt(wlist, nw, w[j], k1);
+    k0 = k1 - 1;
     if (k0 >= 0) {
-      s0 = op->sub + k0;
+      s0 = &op->sub[k0];
       i0 = s0->n++;
     } else {
       s0 = NULL;
       i0 = -1;
     }
-    if (k0 + 1 < nw) {
-      s1 = op->sub + (k0 + 1);
+    if (k1 < nw) {
+      s1 = &op->sub[k1];
       i1 = s1->n++;
     } else {
       s1 = NULL;
@@ -1404,7 +1405,7 @@ printf("object created\n");
     op->c0[j] = c0;
   }
 
-printf("interpolator built\n");
+
   /* Create the NFFT operators. */
   for (k = 0; k < nw; ++k) {
     sub = &op->sub[k];
@@ -1415,10 +1416,8 @@ printf("interpolator built\n");
     sub->n = 0;
   }
 
-printf("sub u allocated\n");
   for (j = 0; j < m; ++j) {
     k0 = op->k0[j];
-    printf("j= %ld,k0 = %ld, n = %ld\n", j,k0,op->sub[k0].n);
     if (k0 >= 0) {
       i0 = add_freq(&op->sub[k0], u[j], v[j]);
     } else {
@@ -1430,12 +1429,11 @@ printf("sub u allocated\n");
       i1 = -1;
     }
 
-    printf("i0 = %ld, i1 = %ld\n", i0,i1);
     op->i0[j] = i0;
     op->i1[j] = i1;
   }
   
-printf("add freq\n");
+
 
   for (k = 0; k < nw; ++k) {
     sub = &op->sub[k];
@@ -1452,7 +1450,8 @@ printf("add freq\n");
     }
   }
 
-printf("u v realocated\n");
+
+
   for (k = 0; k < nw; ++k) {
     sub = &op->sub[k];
     if (sub->n < 0) {
@@ -1476,14 +1475,12 @@ static long add_freq(m3d_op_sub_t *sub, double u, double v)
 {
   long j, n = sub->n;
 
-      printf("in add freq\n", j);
   for (j = 0; j < n; ++j) {
     if (sub->u[j] == u && sub->v[j] == v) {
-      printf("j = %ld\n", j);
       return j;
     }
   }
-  printf("j = %ld,  n = %ld\n", j,n);
+
   sub->u[j] = u;
   sub->v[j] = v;
   ++sub->n;
@@ -1504,59 +1501,62 @@ static long hunt(const double x[], long n, double xp, long ip)
        x[h-1] >= xp > x[h], as x is ascending or descending
      The value 0 or n will be returned if xp lies outside the interval.
    */
-  int ascend= x[n-1]>x[0];
   long jl, ju;
-
-  if (ip<1 || ip>n-1) {
-    /* caller has declined to make an initial guess, so fall back to
-       garden variety bisection method */
-    if ((xp>=x[n-1]) == ascend) return n;
-    if ((xp<x[0]) == ascend) return 0;
-    jl= 0;
-    ju= n-1;
-
+  int ascend = (x[n-1] > x[0]);
+  
+  if (ip < 1 || ip > n - 1) {
+    /* Caller has declined to make an initial guess, so fall back to garden
+       variety bisection method. */
+    if ((xp >= x[n-1]) == ascend) return n;
+    if ((xp < x[0]) == ascend) return 0;
+    jl = 0;
+    ju = n - 1;
   } else {
-    /* search from initial guess ip in ever increasing steps to bracket xp */
-    int inc= 1;
-    jl= ip;
-    if ((xp>=x[ip]) == ascend) { /* search toward larger index values */
-      if (ip==n-1) return n;
-      jl= ip;
-      ju= ip+inc;
-      while ((xp>=x[ju]) == ascend) {
-        jl= ju;
-        inc+= inc;
-        ju+= inc;
-        if (ju>=n) {
-          if ((xp>=x[n-1]) == ascend) return n;
-          ju= n;
+    /* Search from initial guess IP in ever increasing steps to bracket XP. */
+    long inc = 1;
+    jl = ip;
+    if ((xp >= x[ip]) == ascend) {
+      /* Search toward larger index values. */
+      if (ip == n - 1) return n;
+      jl = ip;
+      ju = ip + inc;
+      while ((xp >= x[ju]) == ascend) {
+        jl = ju;
+        inc += inc;
+        ju += inc;
+        if (ju >= n) {
+          if ((xp >= x[n-1]) == ascend) return n;
+          ju = n;
           break;
         }
       }
-    } else {                     /* search toward smaller index values */
-      if (ip==0) return 0;
-      ju= ip;
-      jl= ip-inc;
-      while ((xp<x[jl]) == ascend) {
-        ju= jl;
-        inc+= inc;
-        jl-= inc;
-        if (jl<0) {
-          if ((xp<x[0]) == ascend) return 0;
-          jl= 0;
+    } else {
+      /* Search toward smaller index values. */
+      if (ip == 0) return 0;
+      ju = ip;
+      jl = ip - inc;
+      while ((xp < x[jl]) == ascend) {
+        ju = jl;
+        inc += inc;
+        jl -= inc;
+        if (jl < 0) {
+          if ((xp < x[0]) == ascend) return 0;
+          jl = 0;
           break;
         }
       }
     }
   }
-
-  /* have x[jl]<=xp<x[ju] for ascend, x[jl]>=xp>x[ju] for !ascend */
-  while (ju-jl > 1) {
-    ip= (jl+ju)>>1;
-    if ((xp>=x[ip]) == ascend) jl= ip;
-    else ju= ip;
+  
+  
+  /* Have x[jl] <= xp < x[ju] for ascend; otherwise,
+     have x[jl] >= xp > x[ju]. */
+  while (ju - jl > 1) {
+    ip = (jl + ju) >> 1;
+    if ((xp >= x[ip]) == ascend) jl = ip;
+    else ju = ip;
   }
-
+  
   return ju;
 }
 
@@ -1571,7 +1571,6 @@ static void *p_new(size_t size)
   }
   return ptr;
 }
-
 
 /*
  * Local Variables:

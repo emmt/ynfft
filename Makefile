@@ -1,9 +1,9 @@
 # these values filled in by    yorick -batch make.i
-Y_MAKEDIR=/apps/libexec/yorick/current
-Y_EXE=/apps/libexec/yorick/current/bin/yorick
+Y_MAKEDIR=/usr/local/libexec/yorick
+Y_EXE=/usr/local/libexec/yorick/bin/yorick
 Y_EXE_PKGS=
-Y_EXE_HOME=/apps/libexec/yorick/current
-Y_EXE_SITE=/apps/libexec/yorick/current
+Y_EXE_HOME=/usr/local/libexec/yorick
+Y_EXE_SITE=/usr/local/libexec/yorick
 Y_HOME_PKG=
 
 # ----------------------------------------------------- optimization flags
@@ -23,9 +23,9 @@ OBJS=yor_nfft.o
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L/apps/lib -lnfft3 -lfftw3
+PKG_DEPLIBS=-L/usr/local/lib -lnfft3 -lfftw3
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS=-I/apps/include
+PKG_CFLAGS= -I/usr/local/include 
 PKG_LDFLAGS=
 
 # list of additional package names you want in PKG_EXENAME

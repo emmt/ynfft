@@ -174,6 +174,7 @@ static long ovr_fact_index = -1L;
 static long rank_index = -1L;
 static long fftw_flags_index = -1L;
 static long nfft_flags_index = -1L;
+static long complex_meas_index = -1L;
 
 /* Default value for cutoff number (negative means not yet determined). */
 static long default_cutoff = -1;
@@ -194,6 +195,7 @@ static void initialize(void)
     SET_INDEX(ovr_fact);
     SET_INDEX(rank);
     SET_INDEX(nfft_flags);
+    SET_INDEX(complex_meas);
     SET_INDEX(fftw_flags);
 #undef SET_INDEX
     {
@@ -1045,11 +1047,13 @@ struct _m3d_op_obj {
   double *u, *v, *w; /* output spatial frequencies and wavelength
                         all of length M */
   double pixelsize;
-
+  
   /* interpolator data */
   double *c0;         /* interpolation weight for left sub-plane */
   long *k0, *i0, *i1; /* left sub-plane index, freq. index inside left
                          sub-plane and right sub-plane (all of lenght M) */
+
+  long complex_meas; /* flag:  complex_meas=0 if measurements are pairs of real */
 };
 
 /* Methods. */
@@ -1238,9 +1242,17 @@ static void m3d_eval(void *ptr, int argc)
     }
     yarg_drop(1); /* source no longer needed */
     /* Push destination array and perform spectral interpolation. */
+    if(op->complex_meas){
     dims[0] = 1;
     dims[1] = m;
-    dst = ypush_z(dims);
+      dst = ypush_z(dims);
+    }
+    else{ 
+    dims[0] = 2;
+    dims[1] = 2;
+    dims[2] = m;
+    dst = ypush_d(dims);
+    }
     for (j = 0; j < m; ++j) {
       k0 = op->k0[j];
       c0 = op->c0[j];
@@ -1280,6 +1292,9 @@ static void m3d_extract(void *ptr, char *member)
   y_error("syntax error");
 }
 
+
+
+
 static long add_freq(m3d_op_sub_t *sub, double u, double v);
 
 void Y_nfft_mira3d_new(int argc)
@@ -1295,7 +1310,7 @@ void Y_nfft_mira3d_new(int argc)
   long m, mp, nx, ny, nw;
   long j, k, k0, k1, i0, i1;
   long dim;
-  int monochromatic;
+  int monochromatic,complex_meas=0, id;
   int iarg = argc;
   double cutoff, min_dim, ovr_fact;
   unsigned int nfft_flags;
@@ -1343,6 +1358,19 @@ void Y_nfft_mira3d_new(int argc)
     }
   }
 
+  if(--iarg>=0){
+    long index = yarg_key(iarg);
+    if (index > 0L) {
+      if (index == complex_meas_index){
+	id = yarg_typeid(--iarg);
+        if (get_scalar_int(iarg, &complex_meas) != SUCCESS) {
+	  y_error("bad value for COMPLEX_MEAS keyword");
+	}
+        
+      }
+    }
+  }
+  
 
   /* Compute oversampled dimension. */
   min_dim = ovr_fact*MAX(nx, ny);
@@ -1362,6 +1390,7 @@ void Y_nfft_mira3d_new(int argc)
   op->ny = ny;
   op->nw = nw;
   op->pixelsize = pixelsize;
+  op->complex_meas=complex_meas,
   op->sub = NEW(m3d_op_sub_t, nw);
   op->c0 = NEW(double, m);
   op->k0 = NEW(long, m);

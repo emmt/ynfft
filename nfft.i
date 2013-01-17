@@ -332,13 +332,15 @@ func nfft_full_matrix(op, mode)
 }
 
 extern nfft_mira3d_new;
-/* DOCUMENT H = nfft_mira3d_new(u, v, w, pixelsize, nx, ny, wlist)
+/* DOCUMENT H = nfft_mira3d_new(u, v, w, pixelsize, nx, ny, wlist,complex_meas=)
 
    U, V and W are the spatial frequency coordinates and wavelength they must
    all be of the same size and in compatible units
 
    WLIST = list of model wavelengths (must be in ascending order)
-     
+
+   COMPLEX_MEAS keyword can be used to specify whether the measurements model is an array composed of complex number or pairs of reals. (default: COMPLEX_MEAS =0)
+
    SEE ALSO: nfft_new.
  */
 

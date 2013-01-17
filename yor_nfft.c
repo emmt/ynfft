@@ -1215,6 +1215,7 @@ static void m3d_eval(void *ptr, int argc)
 
     if (arg_type <= Y_DOUBLE) {
       src = ygeta_d(0, NULL, dims);
+
       if (!(((dims[0] == 2 && nw == 1) || (dims[0] == 3 && dims[3] == nw)) &&
             dims[1] == op->nx && dims[2] == op->ny)) {
         goto bad_dims;
@@ -1225,7 +1226,7 @@ static void m3d_eval(void *ptr, int argc)
 
     /* Apply NFFT operator for all planes. */
     for (k = 0; k < nw; ++k, src += stride) {
-      sub = &op->sub[k];
+      sub = &op->sub[k];     
       if (sub->n > 0) {
         f_hat = (double *)sub->plan.f_hat;
         for (i = 0; i < stride; ++i) {
@@ -1236,7 +1237,6 @@ static void m3d_eval(void *ptr, int argc)
       }
     }
     yarg_drop(1); /* source no longer needed */
-
     /* Push destination array and perform spectral interpolation. */
     dims[0] = 1;
     dims[1] = m;
@@ -1360,7 +1360,7 @@ void Y_nfft_mira3d_new(int argc)
   op->m = m;
   op->nx = nx;
   op->ny = ny;
-  op->ny = nw;
+  op->nw = nw;
   op->pixelsize = pixelsize;
   op->sub = NEW(m3d_op_sub_t, nw);
   op->c0 = NEW(double, m);
@@ -1454,7 +1454,7 @@ void Y_nfft_mira3d_new(int argc)
 
   for (k = 0; k < nw; ++k) {
     sub = &op->sub[k];
-    if (sub->n < 0) {
+    if (sub->n > 0) {
       const double *x[2];
       x[0] = sub->u;
       x[1] = sub->v;

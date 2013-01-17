@@ -1293,7 +1293,7 @@ void Y_nfft_mira3d_new(int argc)
   m3d_op_sub_t *s0, *s1;
   double pixelsize;
   long m, mp, nx, ny, nw;
-  long j, k, k0, i0, i1;
+  long j, k, k0, k1, i0, i1;
   long dim;
   int monochromatic;
   int iarg = argc;
@@ -1373,18 +1373,19 @@ void Y_nfft_mira3d_new(int argc)
   }
 
   /* Build interpolator. */
-  k0 = nw/2;
+  k1 = -1;
   for (j = 0; j < m; ++j) {
-    k0 = hunt(wlist, nw, w[j], k0);
+    k1 = hunt(wlist, nw, w[j], k1);
+    k0 = k1 - 1;
     if (k0 >= 0) {
-      s0 = op->sub + k0;
+      s0 = &op->sub[k0];
       i0 = s0->n++;
     } else {
       s0 = NULL;
       i0 = -1;
     }
-    if (k0 + 1 < nw) {
-      s1 = op->sub + (k0 + 1);
+    if (k1 < nw) {
+      s1 = &op->sub[k1];
       i1 = s1->n++;
     } else {
       s1 = NULL;

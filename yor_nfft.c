@@ -66,7 +66,9 @@
 #include <play.h>
 #include <ydata.h>
 
+#include <omp.h>
 #include <nfft3.h>
+#include <fftw3.h>
 
 static long hunt(const double x[], long n, double xp, long ip);
 static void *p_new(size_t size);
@@ -1202,13 +1204,15 @@ static void m3d_eval(void *ptr, int argc)
       dims[3] = op->nw;
     }
     dst = ypush_d(dims);
-    for (k = 0; k < nw; ++k, dst += stride) {
-      sub = &op->sub[k];
+    /* Apply NFFT operator for all planes. */
+#pragma  omp parallel for schedule(dynamic) default(none) shared(nw,stride,op,dst)  
+    for (int k = 0; k < nw; ++k) {
+      m3d_op_sub_t*   sub = &op->sub[k];
       if (sub->n > 0) {
         nfft_adjoint(&sub->plan);
-        f_hat = (const double *)sub->plan.f_hat;
-        for (i = 0; i < stride; ++i) {
-          dst[i] = f_hat[2*i];
+        const double * f_hat = (const double *)sub->plan.f_hat;
+        for (int i = 0; i < stride; ++i) {
+          *(dst+i+k*stride) = f_hat[2*i];
         }
       }
     }
@@ -1229,12 +1233,13 @@ static void m3d_eval(void *ptr, int argc)
     }
 
     /* Apply NFFT operator for all planes. */
-    for (k = 0; k < nw; ++k, src += stride) {
-      sub = &op->sub[k];     
+#pragma  omp parallel for schedule(dynamic) default(none) shared(stride,op,src,nw) 
+    for (int k = 0; k < nw; ++k) {
+      m3d_op_sub_t*       sub = &op->sub[k];     
       if (sub->n > 0) {
-        f_hat = (double *)sub->plan.f_hat;
-        for (i = 0; i < stride; ++i) {
-          f_hat[2*i] = src[i];
+        double* f_hat = (double *)sub->plan.f_hat;
+        for (int i = 0; i < stride; ++i) {
+          f_hat[2*i] =  *(src+i+k*stride);
           f_hat[2*i+1] = 0.0;
         }
         nfft_trafo(&sub->plan);
@@ -1322,6 +1327,9 @@ void Y_nfft_mira3d_new(int argc)
   ovr_fact = 2.0;
   nfft_flags = get_nfft_flags(-1);
   fftw_flags = get_fftw_flags(-1);
+
+  //fftw_init_threads();
+  //  fftw_plan_with_nthreads(4);
 
   /* Get the arguments. */
 

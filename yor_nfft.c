@@ -177,6 +177,7 @@ static long rank_index = -1L;
 static long fftw_flags_index = -1L;
 static long nfft_flags_index = -1L;
 static long complex_meas_index = -1L;
+static long num_threads_index = -1L;
 
 /* Default value for cutoff number (negative means not yet determined). */
 static long default_cutoff = -1;
@@ -198,6 +199,7 @@ static void initialize(void)
     SET_INDEX(rank);
     SET_INDEX(nfft_flags);
     SET_INDEX(complex_meas);
+    SET_INDEX(num_threads);
     SET_INDEX(fftw_flags);
 #undef SET_INDEX
     {
@@ -1056,6 +1058,7 @@ struct _m3d_op_obj {
                          sub-plane and right sub-plane (all of lenght M) */
 
   long complex_meas; /* flag:  complex_meas=0 if measurements are pairs of real */
+  int num_threads;
 };
 
 /* Methods. */
@@ -1315,7 +1318,7 @@ void Y_nfft_mira3d_new(int argc)
   long m, mp, nx, ny, nw;
   long j, k, k0, k1, i0, i1;
   long dim;
-  int monochromatic,complex_meas=0, id;
+  int monochromatic,complex_meas=0, id, num_threads=1,index;
   int iarg = argc;
   double cutoff, min_dim, ovr_fact;
   unsigned int nfft_flags;
@@ -1328,8 +1331,6 @@ void Y_nfft_mira3d_new(int argc)
   nfft_flags = get_nfft_flags(-1);
   fftw_flags = get_fftw_flags(-1);
 
-  //fftw_init_threads();
-  //  fftw_plan_with_nthreads(4);
 
   /* Get the arguments. */
 
@@ -1365,9 +1366,9 @@ void Y_nfft_mira3d_new(int argc)
       y_error("wavelengths must be strictly increasing");
     }
   }
+  ARG_LOOP(iarg, argc) {
+    index = yarg_key(iarg);
 
-  if(--iarg>=0){
-    long index = yarg_key(iarg);
     if (index > 0L) {
       if (index == complex_meas_index){
 	id = yarg_typeid(--iarg);
@@ -1376,7 +1377,13 @@ void Y_nfft_mira3d_new(int argc)
 	}
         
       }
+      if (index == num_threads_index){
+      id = yarg_typeid(--iarg);
+      if (get_scalar_int(iarg, &num_threads) != SUCCESS) {
+        y_error("bad value for NUM_THREADS keyword");
+      }
     }
+  }
   }
   
 
@@ -1404,6 +1411,8 @@ void Y_nfft_mira3d_new(int argc)
   op->k0 = NEW(long, m);
   op->i0 = NEW(long, m);
   op->i1 = NEW(long, m);
+  op->num_threads = num_threads;
+  omp_set_num_threads(num_threads);
 
   /* Initialize the wavelengths of the sub-planes. */
   for (k = 0; k < nw; ++k) {

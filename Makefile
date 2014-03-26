@@ -23,9 +23,11 @@ OBJS=yor_nfft.o
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L/usr/local/lib -lnfft3 -lfftw3
+PKG_DEPLIBS=-L/usr/local/lib -lnfft3   -fopenmp -lnfft3_threads -lfftw3_threads -lfftw3
+
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I/usr/local/include 
+PKG_CFLAGS= -I/usr/local/include -fopenmp  -Ofast  -march=native -mfpmath=sse -pedantic -pipe -std=c99
+
 PKG_LDFLAGS=
 
 # list of additional package names you want in PKG_EXENAME

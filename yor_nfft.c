@@ -66,7 +66,9 @@
 #include <play.h>
 #include <ydata.h>
 
+#include <omp.h>
 #include <nfft3.h>
+#include <fftw3.h>
 
 static long hunt(const double x[], long n, double xp, long ip);
 static void *p_new(size_t size);
@@ -175,6 +177,7 @@ static long rank_index = -1L;
 static long fftw_flags_index = -1L;
 static long nfft_flags_index = -1L;
 static long complex_meas_index = -1L;
+static long num_threads_index = -1L;
 
 /* Default value for cutoff number (negative means not yet determined). */
 static long default_cutoff = -1;
@@ -196,6 +199,7 @@ static void initialize(void)
     SET_INDEX(rank);
     SET_INDEX(nfft_flags);
     SET_INDEX(complex_meas);
+    SET_INDEX(num_threads);
     SET_INDEX(fftw_flags);
 #undef SET_INDEX
     {
@@ -1054,6 +1058,7 @@ struct _m3d_op_obj {
                          sub-plane and right sub-plane (all of lenght M) */
 
   long complex_meas; /* flag:  complex_meas=0 if measurements are pairs of real */
+  int num_threads;
 };
 
 /* Methods. */
@@ -1202,13 +1207,15 @@ static void m3d_eval(void *ptr, int argc)
       dims[3] = op->nw;
     }
     dst = ypush_d(dims);
-    for (k = 0; k < nw; ++k, dst += stride) {
-      sub = &op->sub[k];
+    /* Apply NFFT operator for all planes. */
+#pragma  omp parallel for schedule(dynamic) default(none) shared(nw,stride,op,dst)  
+    for (int k = 0; k < nw; ++k) {
+      m3d_op_sub_t*   sub = &op->sub[k];
       if (sub->n > 0) {
         nfft_adjoint(&sub->plan);
-        f_hat = (const double *)sub->plan.f_hat;
-        for (i = 0; i < stride; ++i) {
-          dst[i] = f_hat[2*i];
+        const double * f_hat = (const double *)sub->plan.f_hat;
+        for (int i = 0; i < stride; ++i) {
+          *(dst+i+k*stride) = f_hat[2*i];
         }
       }
     }
@@ -1229,12 +1236,13 @@ static void m3d_eval(void *ptr, int argc)
     }
 
     /* Apply NFFT operator for all planes. */
-    for (k = 0; k < nw; ++k, src += stride) {
-      sub = &op->sub[k];     
+#pragma  omp parallel for schedule(dynamic) default(none) shared(stride,op,src,nw) 
+    for (int k = 0; k < nw; ++k) {
+      m3d_op_sub_t*       sub = &op->sub[k];     
       if (sub->n > 0) {
-        f_hat = (double *)sub->plan.f_hat;
-        for (i = 0; i < stride; ++i) {
-          f_hat[2*i] = src[i];
+        double* f_hat = (double *)sub->plan.f_hat;
+        for (int i = 0; i < stride; ++i) {
+          f_hat[2*i] =  *(src+i+k*stride);
           f_hat[2*i+1] = 0.0;
         }
         nfft_trafo(&sub->plan);
@@ -1310,7 +1318,7 @@ void Y_nfft_mira3d_new(int argc)
   long m, mp, nx, ny, nw;
   long j, k, k0, k1, i0, i1;
   long dim;
-  int monochromatic,complex_meas=0, id;
+  int monochromatic,complex_meas=0, id, num_threads=1,index;
   int iarg = argc;
   double cutoff, min_dim, ovr_fact;
   unsigned int nfft_flags;
@@ -1322,6 +1330,7 @@ void Y_nfft_mira3d_new(int argc)
   ovr_fact = 2.0;
   nfft_flags = get_nfft_flags(-1);
   fftw_flags = get_fftw_flags(-1);
+
 
   /* Get the arguments. */
 
@@ -1357,9 +1366,9 @@ void Y_nfft_mira3d_new(int argc)
       y_error("wavelengths must be strictly increasing");
     }
   }
+  ARG_LOOP(iarg, argc) {
+    index = yarg_key(iarg);
 
-  if(--iarg>=0){
-    long index = yarg_key(iarg);
     if (index > 0L) {
       if (index == complex_meas_index){
 	id = yarg_typeid(--iarg);
@@ -1368,7 +1377,13 @@ void Y_nfft_mira3d_new(int argc)
 	}
         
       }
+      if (index == num_threads_index){
+      id = yarg_typeid(--iarg);
+      if (get_scalar_int(iarg, &num_threads) != SUCCESS) {
+        y_error("bad value for NUM_THREADS keyword");
+      }
     }
+  }
   }
   
 
@@ -1396,6 +1411,8 @@ void Y_nfft_mira3d_new(int argc)
   op->k0 = NEW(long, m);
   op->i0 = NEW(long, m);
   op->i1 = NEW(long, m);
+  op->num_threads = num_threads;
+  omp_set_num_threads(num_threads);
 
   /* Initialize the wavelengths of the sub-planes. */
   for (k = 0; k < nw; ++k) {

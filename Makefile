@@ -1,9 +1,12 @@
-# these values filled in by    yorick -batch make.i
-Y_MAKEDIR=/usr/local/libexec/yorick
-Y_EXE=/usr/local/libexec/yorick/bin/yorick
+# Where are the sources? (automatically filled in by configure script)
+srcdir=.
+
+# These values filled in by: yorick -batch make.i
+Y_MAKEDIR=
+Y_EXE=
 Y_EXE_PKGS=
-Y_EXE_HOME=/usr/local/libexec/yorick
-Y_EXE_SITE=/usr/local/libexec/yorick
+Y_EXE_HOME=
+Y_EXE_SITE=
 Y_HOME_PKG=
 
 # ----------------------------------------------------- optimization flags
@@ -15,7 +18,7 @@ TGT=$(DEFAULT_TGT)
 # ------------------------------------------------ macros for this package
 
 PKG_NAME=yor_nfft
-PKG_I=nfft.i
+PKG_I=${srcdir}/nfft.i
 
 OBJS=yor_nfft.o
 
@@ -23,10 +26,10 @@ OBJS=yor_nfft.o
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L/usr/local/lib -lnfft3   -fopenmp -lnfft3_threads -lfftw3_threads -lfftw3
+PKG_DEPLIBS=-L/apps/lib -lnfft3 -lfftw3_threads -lfftw3
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS= -I/usr/local/include -fopenmp  -Ofast  -march=native -mfpmath=sse -pedantic -pipe -std=c99
+PKG_CFLAGS=-I/apps/include
 
 PKG_LDFLAGS=
 
@@ -44,8 +47,9 @@ PKG_I_EXTRA=
 
 # released files and archive name
 RELEASE_FILES = AUTHORS LICENSE Makefile NEWS README TODO \
-	$(PKG_I) nfft-tests.i yor_nfft.c
+	$(PKG_I) nfft-tests.i yor_nfft.c m3d_nfft.c
 RELEASE_NAME = ynfft-$(RELEASE_VERSION).tar.bz2
+RELEASE_VERSION = 0.0.2
 
 # -------------------------------- standard targets and rules (in Makepkg)
 
@@ -56,9 +60,13 @@ RELEASE_NAME = ynfft-$(RELEASE_VERSION).tar.bz2
 PKG_I_DEPS=$(PKG_I)
 Y_DISTMAKE=distmake
 
+ifeq (,$(strip $(Y_MAKEDIR)))
+$(info *** WARNING *** Y_MAKEDIR not defined, you may run 'yorick -batch make.i' first.)
+else
 include $(Y_MAKEDIR)/Make.cfg
 include $(Y_MAKEDIR)/Makepkg
 include $(Y_MAKEDIR)/Make$(TGT)
+endif
 
 # override macros Makepkg sets for rules and other macros
 # see comments in Y_HOME/Makepkg for a list of possibilities
@@ -82,8 +90,14 @@ MAKE_TEMPLATE = protect-against-1.5
 #myfunc.o: myapi.h myfunc.c
 #	$(CC) $(CPPFLAGS) $(CFLAGS) -DMY_SWITCH -o $@ -c myfunc.c
 
+%.o: ${srcdir}/%.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
+
 tests: $(PKG_DLL)
 	$(Y_EXE) -batch nfft-tests.i
+
+yor_nfft.o: ${srcdir}/yor_nfft.c ${srcdir}/m3d_nfft.c
+	$(CC) -I. -DVERSION=\"$(RELEASE_VERSION)\" $(CPPFLAGS) $(CFLAGS) -o $@ -c $<
 
 release: $(RELEASE_NAME)
 

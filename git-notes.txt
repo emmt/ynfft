@@ -25,6 +25,8 @@ To prepare a new release (replace the version appropriately):
   git merge --no-ff release-1.0.1
   git tag -a '1.0.1' -m 'Public version 1.0.1 released.'
   make release
+  git push
+  git push --tags
 
 * delete the release branch which is no longer needed:
 

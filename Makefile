@@ -102,7 +102,7 @@ yor_nfft.o: ${srcdir}/yor_nfft.c ${srcdir}/m3d_nfft.c
 release: $(RELEASE_NAME)
 
 $(RELEASE_NAME):
-	git checkout public
+	git checkout master
 	@if test "x$(RELEASE_VERSION)" = "x"; then \
 	  echo >&2 "set package version:  make RELEASE_VERSION=... archive"; \
 	else \

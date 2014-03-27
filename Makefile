@@ -26,10 +26,10 @@ OBJS=yor_nfft.o
 PKG_EXENAME=yorick
 
 # PKG_DEPLIBS=-Lsomedir -lsomelib   for dependencies of this package
-PKG_DEPLIBS=-L/apps/lib -lnfft3 -lfftw3_threads -lfftw3
+PKG_DEPLIBS=
 
 # set compiler (or rarely loader) flags specific to this package
-PKG_CFLAGS=-I/apps/include
+PKG_CFLAGS=
 
 PKG_LDFLAGS=
 
@@ -102,6 +102,7 @@ yor_nfft.o: ${srcdir}/yor_nfft.c ${srcdir}/m3d_nfft.c
 release: $(RELEASE_NAME)
 
 $(RELEASE_NAME):
+	git checkout public
 	@if test "x$(RELEASE_VERSION)" = "x"; then \
 	  echo >&2 "set package version:  make RELEASE_VERSION=... archive"; \
 	else \

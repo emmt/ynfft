@@ -7,39 +7,87 @@ Installation
    <http://www-user.tu-chemnitz.de/~potts/nfft/>, the FFTW library from
    <http://www.fftw.org/> and Yorick from <http://yorick.github.com/>.
 
-2. Go to the YNFFT directory (where this README file is located):
+2. Unpack the plug-in code somewhere.
 
-   > cd $DIR/ynfft-$VERSION
+3. Configure for compilation.  The are two possibilities:
 
-3. Edit the file "Makefile" and check the values of the variables PKG_DEPLIBS,
-   PKG_CFLAGS and PKG_LDFLAGS; for instance, assuming PREFIX is a variable
-   with the top directory where FFTW and NFFT libraries are installed:
+   a/ For an "in-place" build, go to the source directory of the plug-in
+      code (where this README file is located) and run the configuration
+      script:
 
-   PKG_DEPLIBS=-L$(PREFIX)/lib -lnfft3 -lfftw3
-   PKG_CFLAGS=-I$(PREFIX)/include
-   PKG_LDFLAGS=
+         cd SRC_DIR
+         ./configure --cflags=... --deplibs=...
 
-4. Update the paths in the file "Makefile" for compilation by executing the
-   following command:
+      For instance:
 
-   > yorick -batch make.i
+          ./configure --cflags='-I/usr/local/include' --deplibs='-L/usr/local/lib -lnfft3 -lfftw3'
 
-   where "yorick" can be replaced by the full path to your Yorick interpreter
-   if not installed in a standard location.
+      or, to use OpenMP:
+
+          ./configure --cflags='-I/usr/local/include -fopenmp -Ofast -march=native -mfpmath=sse -pedantic -pipe -std=c99' --deplibs='-L/usr/local/lib -lnfft3 -lnfft3_threads -lfftw3_threads -lfftw3'
+
+      To see the configuration options, call:
+
+           ./configure --help
+
+
+   b/ To compile in a different build directory, say $BUILD_DIR, create the
+      build directory, go to the build directory, and run the configuration
+      script:
+
+          mkdir -p $BUILD_DIR
+          cd $BUILD_DIR
+          $SRC_DIR/configure --cflags=... --deplibs=...
+
+      where $SRC_DIR is the path to the source directory of the plug-in
+      code. To see the configuration options, call:
+
+          $SRC_DIR/configure --help
+
+
+4. Compile the code:
+
+       make
+
 
 5. Optionally, check the plugin:
 
-   > make tests
+       make tests
 
    You may have to set some environment variable for the dynamic loader
    (LD_LIBRARY_PATH on Linux) if the NFFT library is installed in a
    non-standard location, e.g.:
 
-   > LD_LIBRARY_PATH=$PREFIX/lib make tests
+       LD_LIBRARY_PATH=$PREFIX/lib make tests
 
-6. Finally, install the plugin:
 
-   > make install
+4. Finally, install the plug-in in Yorick directories:
+
+       make install
+
+
+
+Alternative installation method
+===============================
+
+Replace step No. 3 of the installation procedure (see above) by:
+
+3.1. Edit the file "Makefile" and check the values of the variables
+     PKG_DEPLIBS, PKG_CFLAGS and PKG_LDFLAGS; for instance, assuming PREFIX
+     is a variable with the top directory where FFTW and NFFT libraries are
+     installed:
+
+         PKG_DEPLIBS=-L$(PREFIX)/lib -lnfft3 -lfftw3
+         PKG_CFLAGS=-I$(PREFIX)/include
+         PKG_LDFLAGS=
+
+3.2. Update the paths in the file "Makefile" for compilation by executing
+     the following command:
+
+         yorick -batch make.i
+
+      where "yorick" can be replaced by the full path to your Yorick
+      interpreter if not installed in a standard location.
 
 
 Credits

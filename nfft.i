@@ -1,11 +1,13 @@
 /*
  * nfft.i --
  *
- * Interface for NFFT for Yorick.
+ * Yorick interface to NFFT (non-uniform fast Fourier transform).
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2012 Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2012, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2013-2014, Ferréol Soulez <ferreol.soulez@univ-lyon1.fr>
+ * and Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This software is governed by the CeCILL-C license under French law and
  * abiding by the rules of distribution of free software.  You can use, modify
@@ -38,7 +40,10 @@
 if (is_func(plug_in)) plug_in, "yor_nfft";
 
 extern nfft_version;
-
+/* DOCUMENT nfft_version();
+     Returns the version of NFFT library as a string.
+   SEE ALSO: nfft_new.
+ */
 local NFFT_PRE_PHI_HUT, NFFT_FG_PSI, NFFT_PRE_LIN_PSI, NFFT_PRE_FG_PSI;
 local NFFT_PRE_PSI, NFFT_PRE_FULL_PSI, NFFT_SORT_NODES;
 local NFFT_ESTIMATE, NFFT_MEASURE, NFFT_PATIENT, NFFT_EXHAUSTIVE;
@@ -76,7 +81,7 @@ extern nfft_new;
 
      The new operator can be called as a function to apply the transform.  For
      instance:
-     
+
        b = op(a)
 
      where A is a complex array of dimensions DIMS (see above) yields a
@@ -122,7 +127,7 @@ extern nfft_new;
      deconvolution step (division by the Fourier transform of the
      interpolation kernel), F is a discrete Fourier transform (computed by
      FFTW) and B is a sparse interpolation matrix.
- 
+
 
    KEYWORDS:
      Keyword OVR_FACT (a scalar or a vector of length D) can be used to specify
@@ -145,59 +150,59 @@ extern nfft_new;
                            multiplication with the diagonal matrix D) uses
                            precomputed values of the Fourier transformed window
                            function.
-       
+
        NFFT_FG_PSI       - If this flag is set, the convolution step (the
                            multiplication with the sparse interpolation matrix
                            B) uses particular properties of the Gaussian window
                            function to trade multiplications for direct calls
                            to exponential function.
-       
+
        NFFT_PRE_LIN_PSI  - If this flag is set, the convolution step (the
                            multiplication with the sparse interpolation matrix
                            B) uses linear interpolation from a lookup table of
                            equispaced samples of the window function instead of
                            exact values of the window function.
-       
+
        NFFT_PRE_FG_PSI   - If this flag is set, the convolution step (the
                            multiplication with the sparse interpolation matrix
                            B) uses particular properties of the Gaussian window
                            function to trade multiplications for direct calls to
                            exponential function (the remaining direct calls are
                            precomputed).
- 	 
+
        NFFT_PRE_PSI      - If this flag is set, the convolution step (the
                            multiplication with the sparse interpolation matrix
                            B) uses NUM_NODES*(2*CUTOFF + 2)*RANK precomputed
                            values of the window function.
-       
+
        NFFT_PRE_FULL_PSI - If this flag is set, the convolution step (the
                            multiplication with the sparse interpolation matrix
                            B) uses NUM_NODES*(2*CUTOFF + 2)^RANK precomputed
                            values of the window function, in addition indices
                            of source and target vectors are stored.
-       
+
        NFFT_SORT_NODES   - If set, the sampling nodes are internally sorted,
                            which can result in a performance increase.  This
                            has no other side effects for the user.
 
      plus at most one of the following values to specify the strategy for
      searching for a fast FFT in FFTW library:
-     
+
        NFFT_ESTIMATE specifies that, instead of actual measurements of
                     different algorithms, a simple heuristic is used to pick a
                     (probably sub-optimal) plan quickly.
-       
+
        NFFT_MEASURE tells FFTW to find an optimized plan by actually computing
                     several FFTs and measuring their execution time. Depending
                     on your machine, this can take some time (often a few
                     seconds).
-       
+
        NFFT_PATIENT is like NFFT_MEASURE, but considers a wider range of
                     algorithms and often produces a "more optimal" plan
                     (especially for large transforms), but at the expense of
                     several times longer planning time (especially for large
                     transforms).
-       
+
        NFFT_EXHAUSTIVE is like NFFT_PATIENT, but considers an even wider range
                     of algorithms, including many that we think are unlikely
                     to be fast, to produce the most optimal plan but with a
@@ -233,7 +238,7 @@ extern nfft_indgen;
      frame.  If optional argument STP is missing an array of longs
      [-(LEN/2), 1 - (LEN/2), 2 - (LEN/2), ...] is returned; otherwise, an array of
      doubles [-(LEN/2), 1 - (LEN/2), 2 - (LEN/2), ...]*STP is returned.
-     
+
    SEE ALSO: indgen.
  */
 
@@ -256,7 +261,7 @@ func nfft_full_matrix(op, mode)
 {
   PI = 3.1415926535897932384626433832795029;
   if (4*atan(1) != PI) error, "bad value for PI?";
- 
+
   rank = op.rank;
   nodes = op.nodes;
   num_nodes = op.num_nodes;
@@ -332,14 +337,17 @@ func nfft_full_matrix(op, mode)
 }
 
 extern nfft_mira3d_new;
-/* DOCUMENT H = nfft_mira3d_new(u, v, w, pixelsize, nx, ny, wlist,complex_meas=)
+/* DOCUMENT H = nfft_mira3d_new(u, v, w, pixelsize, nx, ny, wlist,
+                                complex_meas=);
 
    U, V and W are the spatial frequency coordinates and wavelength they must
-   all be of the same size and in compatible units
+   all be of the same size and in compatible units.
 
-   WLIST = list of model wavelengths (must be in ascending order)
+   WLIST = list of model wavelengths (must be in ascending order).
 
-   COMPLEX_MEAS keyword can be used to specify whether the measurements model is an array composed of complex number or pairs of reals. (default: COMPLEX_MEAS =0)
+   COMPLEX_MEAS keyword can be used to specify whether the measurements model
+   is an array composed of complex number or pairs of reals. (default:
+   COMPLEX_MEAS = 0).
 
    SEE ALSO: nfft_new.
  */
@@ -352,5 +360,6 @@ extern nfft_mira3d_new;
  * indent-tabs-mode: nil
  * fill-column: 78
  * coding: utf-8
+ * ispell-local-dictionary: "american"
  * End:
  */

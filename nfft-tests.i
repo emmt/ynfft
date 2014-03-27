@@ -5,7 +5,9 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2012 Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2012, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2013-2014, Ferréol Soulez <ferreol.soulez@univ-lyon1.fr>
+ * and Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This software is governed by the CeCILL-C license under French law and
  * abiding by the rules of distribution of free software.  You can use, modify
@@ -42,7 +44,7 @@ func _nfft_test_init
     index = strfind("/", here, back=1n)(2);
     if (index < 0) error, "bad path";
     dir = strpart(here, 1:index);
-    prev = plug_dir(dir); 
+    prev = plug_dir(dir);
     include, dir+"nfft.i", 1;
     plug_dir, prev;
   }
@@ -58,7 +60,7 @@ func _nfft_test_info(name, a, b, threshold)
   }
   e *= r;
   if (is_void(threshold)) threshold = 1e-6;
-  failure = (max(e) > threshold); 
+  failure = (max(e) > threshold);
   write, format = "%s: %s\n", name, (failure ? "FAILURE" : "SUCCESS");
   write, format = "  - absolute error: max. = %.1e, RMS = %.1e\n", max(r), sqrt(avg(r*r));
   //write, format = "  - relative error: max. = %.1e, RMS = %.1e\n", max(e), sqrt(avg(e*e));
@@ -96,7 +98,7 @@ func nfft_test
 
   FLAGS1 = (NFFT_PRE_PHI_HUT | NFFT_PRE_PSI | NFFT_ESTIMATE);
   FLAGS2 = (FLAGS1 | NFFT_SORT_NODES);
-  
+
   num_nodes = 42;
   n1 = 20;   // input size along 1st axis
   n2 = 22;   // input size along 2nd axis
@@ -108,14 +110,14 @@ func nfft_test
 
   // 1-D test
   f = nfft_new(n1, u1*PIXSCALE);
-  a0 = nfft_full_matrix(f, 0); 
-  a1 = nfft_full_matrix(f, 1); 
+  a0 = nfft_full_matrix(f, 0);
+  a1 = nfft_full_matrix(f, 1);
   a2 = nfft_full_matrix(f, 2);
   _nfft_test_info, "1-D transform (A0 vs. A1)", a0, a1;
   _nfft_test_info, "1-D transform (A1 vs. A2)", a1, a2;
   _nfft_test_newline;
 
-  if (anyof(f.nodes != u1*PIXSCALE)) error, "nodes have changed"; 
+  if (anyof(f.nodes != u1*PIXSCALE)) error, "nodes have changed";
   f1 = nfft_test_clone(f, flags=FLAGS1);
   if (f1.flags != FLAGS1) error, "flags have changed";
   f2 = nfft_test_clone(f, flags=FLAGS2);
@@ -131,17 +133,17 @@ func nfft_test
   if (anyof(a21 != a1)) error, "matrix coefficients have changed";
   a22 = nfft_full_matrix(f2, 2);
   if (anyof(a22 != a2)) error, "matrix coefficients have changed";
-  
+
   // 2-D test
   f = nfft_new(n1, u1*PIXSCALE, n2, u2*PIXSCALE);
-  a0 = nfft_full_matrix(f, 0); 
-  a1 = nfft_full_matrix(f, 1); 
+  a0 = nfft_full_matrix(f, 0);
+  a1 = nfft_full_matrix(f, 1);
   a2 = nfft_full_matrix(f, 2);
   _nfft_test_info, "2-D transform (A0 vs. A1)", a0, a1;
   _nfft_test_info, "2-D transform (A1 vs. A2)", a1, a2;
   _nfft_test_newline;
 
-  if (anyof(f.nodes != [u1,u2]*PIXSCALE)) error, "nodes have changed"; 
+  if (anyof(f.nodes != [u1,u2]*PIXSCALE)) error, "nodes have changed";
   f1 = nfft_test_clone(f, flags=FLAGS1);
   if (f1.flags != FLAGS1) error, "flags have changed";
   f2 = nfft_test_clone(f, flags=FLAGS2);
@@ -157,17 +159,17 @@ func nfft_test
   if (anyof(a21 != a1)) error, "matrix coefficients have changed";
   a22 = nfft_full_matrix(f2, 2);
   if (anyof(a22 != a2)) error, "matrix coefficients have changed";
-  
+
   // 3-D test
   f = nfft_new(n1, u1*PIXSCALE, n2, u2*PIXSCALE, n3, u3*PIXSCALE);
-  a0 = nfft_full_matrix(f, 0); 
-  a1 = nfft_full_matrix(f, 1); 
+  a0 = nfft_full_matrix(f, 0);
+  a1 = nfft_full_matrix(f, 1);
   a2 = nfft_full_matrix(f, 2);
   _nfft_test_info, "3-D transform (A0 vs. A1)", a0, a1;
   _nfft_test_info, "3-D transform (A1 vs. A2)", a1, a2;
   _nfft_test_newline;
 
-  if (anyof(f.nodes != [u1,u2,u3]*PIXSCALE)) error, "nodes have changed"; 
+  if (anyof(f.nodes != [u1,u2,u3]*PIXSCALE)) error, "nodes have changed";
   f1 = nfft_test_clone(f, flags=FLAGS1);
   if (f1.flags != FLAGS1) error, "flags have changed";
   f2 = nfft_test_clone(f, flags=FLAGS2);
@@ -182,7 +184,7 @@ func nfft_test
   a21 = nfft_full_matrix(f2, 1);
   if (anyof(a21 != a1)) error, "matrix coefficients have changed";
   a22 = nfft_full_matrix(f2, 2);
-  if (anyof(a22 != a2)) error, "matrix coefficients have changed";  
+  if (anyof(a22 != a2)) error, "matrix coefficients have changed";
 }
 
 _nfft_test_init;

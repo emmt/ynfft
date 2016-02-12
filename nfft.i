@@ -5,9 +5,9 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2012, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
- * Copyright (C) 2013-2014, Ferréol Soulez <ferreol.soulez@univ-lyon1.fr>
- * and Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2012, 2015-2016, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2013-2014, Ferréol Soulez <ferreol.soulez@univ-lyon1.fr> and
+ *                          Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This software is governed by the CeCILL-C license under French law and
  * abiding by the rules of distribution of free software.  You can use, modify
@@ -41,7 +41,7 @@ if (is_func(plug_in)) plug_in, "yor_nfft";
 
 extern nfft_version;
 /* DOCUMENT nfft_version();
-     Returns the version of NFFT library as a string.
+     Returns the version of NFFT plug-in as a string.
    SEE ALSO: nfft_new.
  */
 local NFFT_PRE_PHI_HUT, NFFT_FG_PSI, NFFT_PRE_LIN_PSI, NFFT_PRE_FG_PSI;

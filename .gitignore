@@ -2,6 +2,12 @@
 ##################
 ywrap.c
 
+# Specific directories #
+########################
+build
+releases
+work
+
 # Automatic backups #
 #####################
 *~

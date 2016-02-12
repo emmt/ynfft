@@ -5,9 +5,9 @@
  *
  *-----------------------------------------------------------------------------
  *
- * Copyright (C) 2012, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
- * Copyright (C) 2013-2014, Ferréol Soulez <ferreol.soulez@univ-lyon1.fr>
- * and Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2012, 2015-2016, Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
+ * Copyright (C) 2013-2014, Ferréol Soulez <ferreol.soulez@univ-lyon1.fr> and
+ *                          Éric Thiébaut <eric.thiebaut@univ-lyon1.fr>
  *
  * This software is governed by the CeCILL-C license under French law and
  * abiding by the rules of distribution of free software.  You can use, modify
@@ -72,6 +72,14 @@
 #endif
 #include <nfft3.h>
 #include <fftw3.h>
+
+/* Deal with different versions of NFFT3. */
+#ifdef NFFT_DEFINE_MALLOC_API
+# define MEMBER_NFFT_FLAGS flags
+#else
+# define NFFT_INT int
+# define MEMBER_NFFT_FLAGS nfft_flags
+#endif
 
 #define MAX(a,b)    ((a) >= (b) ? (a) : (b))
 #define MIN(a,b)    ((a) <= (b) ? (a) : (b))
@@ -312,7 +320,7 @@ struct _op {
 #define GET_INP_DIMS(op)        ((op)->plan.N)
 #define GET_OVR_DIMS(op)        ((op)->plan.n)
 #define GET_OVR_FACT(op)        ((op)->plan.sigma)
-#define GET_NFFT_FLAGS(op)      ((op)->plan.nfft_flags)
+#define GET_NFFT_FLAGS(op)      ((op)->plan.MEMBER_NFFT_FLAGS)
 #define GET_FFTW_FLAGS(op)      ((op)->plan.fftw_flags)
 #define GET_CUTOFF(op)          ((op)->plan.m)
 #define GET_NEVALS(op)          ((op)->nevals)
@@ -354,7 +362,7 @@ static void op_eval(void *ptr, int argc)
   op_t *op = (op_t *)ptr;
   const double *src;
   double *dst;
-  const int *inp_dims;
+  const NFFT_INT *inp_dims;
   long dims[Y_DIMSIZE];
   long t, rank, num_nodes, dim, nsrc, ndst;
   int arg_type, job = 0;
@@ -445,7 +453,7 @@ static void op_extract(void *ptr, char *member)
     long value = GET_RANK(op);
     ypush_long(value);
   } else if (index == ovr_dims_index) {
-    const int *src = GET_OVR_DIMS(op);
+    const NFFT_INT *src = GET_OVR_DIMS(op);
     long *dst;
     rank = GET_RANK(op);
     dims[0] = 1;
@@ -456,7 +464,7 @@ static void op_extract(void *ptr, char *member)
       dst[1 + t] = src[rank - 1 - t];
     }
   } else if (index == inp_dims_index) {
-    const int *src = GET_INP_DIMS(op);
+    const NFFT_INT *src = GET_INP_DIMS(op);
     long *dst;
     rank = GET_RANK(op);
     dims[0] = 1;
@@ -642,7 +650,8 @@ BUILTIN(new)(int argc)
   /* Other parameters of the transform. */
   int           rank;
   int           cutoff = -1;
-  int           flags = -1, nfft_flags, fftw_flags;
+  int           flags = -1;
+  unsigned int  nfft_flags, fftw_flags;
   long          num_nodes = 0;
   const double *x[MAX_RANK];
 
@@ -1013,7 +1022,7 @@ static void make_nfft_plan(nfft_plan *plan, long rank,
   }
 
   /* Precompute interpolation weights. */
-  if ((plan->nfft_flags & PRE_ONE_PSI) != 0) {
+  if ((plan->MEMBER_NFFT_FLAGS & PRE_ONE_PSI) != 0) {
     nfft_precompute_one_psi(plan);
   }
   return;

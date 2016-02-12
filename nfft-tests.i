@@ -191,14 +191,3 @@ _nfft_test_init;
 if (batch()) {
   nfft_test;
 }
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 78
- * coding: utf-8
- * End:
- */

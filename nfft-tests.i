@@ -102,7 +102,7 @@ func nfft_test
   num_nodes = 42;
   n1 = 20;   // input size along 1st axis
   n2 = 22;   // input size along 2nd axis
-  n3 =  8;   // input size along 3rd axis
+  n3 = 12;   // input size along 3rd axis
 
   u1 = (random(num_nodes) - 0.5)*(BMAX/LAMBDA);
   u2 = (random(num_nodes) - 0.5)*(BMAX/LAMBDA);

@@ -1032,15 +1032,3 @@ static void make_nfft_plan(nfft_plan *plan, long rank,
 }
 
 #include "m3d_nfft.c"
-
-/*
- * Local Variables:
- * mode: C
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 78
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

@@ -351,15 +351,3 @@ extern nfft_mira3d_new;
 
    SEE ALSO: nfft_new.
  */
-
-/*
- * Local Variables:
- * mode: Yorick
- * tab-width: 8
- * c-basic-offset: 2
- * indent-tabs-mode: nil
- * fill-column: 78
- * coding: utf-8
- * ispell-local-dictionary: "american"
- * End:
- */

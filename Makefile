@@ -47,9 +47,9 @@ PKG_I_EXTRA=
 
 # released files and archive name
 RELEASE_FILES = AUTHORS LICENSE Makefile NEWS README TODO \
-	$(PKG_I) nfft-tests.i yor_nfft.c m3d_nfft.c
-RELEASE_NAME = ynfft-$(RELEASE_VERSION).tar.bz2
-RELEASE_VERSION = 1.0.0
+	nfft.i nfft-tests.i yor_nfft.c m3d_nfft.c
+RELEASE_NAME = ${srcdir}/releases/ynfft-$(RELEASE_VERSION).tar.bz2
+RELEASE_VERSION = 1.0.3
 
 # -------------------------------- standard targets and rules (in Makepkg)
 
@@ -102,7 +102,7 @@ yor_nfft.o: ${srcdir}/yor_nfft.c ${srcdir}/m3d_nfft.c
 release: $(RELEASE_NAME)
 
 $(RELEASE_NAME):
-	git checkout public
+	git checkout master
 	@if test "x$(RELEASE_VERSION)" = "x"; then \
 	  echo >&2 "set package version:  make RELEASE_VERSION=... archive"; \
 	else \
@@ -113,7 +113,17 @@ $(RELEASE_NAME):
 	    echo >&2 "directory $$dir already exists"; \
 	  else \
 	    mkdir -p "$$dir"; \
-	    cp -a $(RELEASE_FILES) "$$dir/."; \
+	    for file in $(RELEASE_FILES); do \
+              src="${srcdir}/$$file"; \
+	      dst="$$dir/$$file"; \
+	      if test "$$file" = "Makefile"; then \
+	        sed <"$$src" >"$$dst" -e 's/^\( *Y_\(MAKEDIR\|EXE\(\|_PKGS\|_HOME\|_SITE\)\|HOME_PKG\) *=\).*/\1/'; \
+	        touch -r "$$src" "$$dst"; \
+	      else \
+	        cp -p "$$src" "$$dst"; \
+	      fi; \
+	    done; \
+	    rm -f "$$dir"/*~ "$$dir"/*/*~; \
 	    echo "$(RELEASE_VERSION)" > "$$dir/VERSION"; \
 	    tar jcf "$(RELEASE_NAME)" "$$dir"; \
 	    rm -rf "$$dir"; \

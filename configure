@@ -206,7 +206,7 @@ cfg_s2=$(cfg_subst_macro "Y_EXE_HOME"  "$cfg_yhome")
 cfg_s3=$(cfg_subst_macro "Y_EXE_SITE"  "$cfg_ysite")
 cfg_s4=$(cfg_subst_macro "PKG_CFLAGS"  "$cfg_cflags")
 cfg_s5=$(cfg_subst_macro "PKG_DEPLIBS" "$cfg_deplibs")
-cfg_s6=$(cfg_subst_macro "PKG_LFLAGS"  "$cfg_ldflags")
+cfg_s6=$(cfg_subst_macro "PKG_LDFLAGS" "$cfg_ldflags")
 cfg_s7=$(cfg_subst_macro "srcdir"      "$cfg_srcdir")
 sed < "$cfg_src" > "$cfg_dst" \
   -e "$cfg_s0;$cfg_s1;$cfg_s2;$cfg_s3;$cfg_s4;$cfg_s5;$cfg_s6;$cfg_s7"

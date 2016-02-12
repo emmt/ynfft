@@ -1,0 +1,31 @@
+The "public" branch correspond to developpement for the distributed
+version of the software.
+
+To prepare a new release (replace the version appropriately):
+
+* create a new "release" branch from the "public" branch:
+
+  git checkout -b release-1.0.1 public
+
+* edit "Makefile" to change version number (macro RELEASE_VERSION),
+  and make any other suitable changes:
+
+  emacs Makefile
+
+* commit the changes (after checking everything is in order):
+
+  git status
+  git commit -a -m 'Bumped version number to 1.0.1'
+
+* go to the "master" branch which is only used for releases (see
+  http://nvie.com/posts/a-successful-git-branching-model/), merge the
+  changes and add a tag:
+
+  git checkout master
+  git merge --no-ff release-1.0.1
+  git tag -a '1.0.1' -m 'Public version 1.0.1 released.'
+  make release
+
+* delete the release branch which is no longer needed:
+
+  git branch -d release-1.0.1

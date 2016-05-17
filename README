@@ -9,7 +9,7 @@ Installation
 
 2. Unpack the plug-in code somewhere.
 
-3. Configure for compilation.  The are two possibilities:
+3. Configure for compilation.  There are two possibilities:
 
    a/ For an "in-place" build, go to the source directory of the plug-in
       code (where this README file is located) and run the configuration

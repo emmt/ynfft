@@ -216,7 +216,7 @@ static void initialize(void)
     SET_INDEX(fftw_flags);
 #undef SET_INDEX
     {
-      /* Get default size of window (in case of interupts, must be done
+      /* Get default size of window (in case of interrupts, must be done
          last). */
       nfft_plan p;
       nfft_init_1d(&p, 100, 1);

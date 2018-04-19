@@ -38,6 +38,7 @@
 cfg_cflags=
 cfg_deplibs='-lnfft3 -lfftw3_threads -lfftw3'
 cfg_ldflags=
+cfg_enable_threads=yes
 
 # The other values are pretty general.
 cfg_tmpdir=.
@@ -93,6 +94,7 @@ options:
   --deplibs=DEPLIBS    Flags for dependencies [$cfg_deplibs], for instance:
                          --deplibs='-Lsomedir -lsomelib'
   --ldflags=LDFLAGS    Additional linker flags [$cfg_ldflags].
+  --enable-threads     Enable multi-threaded FFT [$cfg_enable_threads].
   --debug              Turn debug mode on (for this script).
   -h, --help           Print this help and exit.
 EOF
@@ -140,6 +142,16 @@ while test $# -ge 1; do
     --ldflags=*)
       cfg_ldflags=$(cfg_opt_value "$cfg_arg")
       ;;
+    --enable-threads)
+      cfg_enable_threads=yes
+      ;;
+    --enable-threads=*)
+      cfg_value=$(cfg_opt_value "$cfg_arg")
+      if test "$cfg_value" != "yes" -a "$cfg_value" != "no"; then
+        cfg_die "Bad value \"$cfg_value\" for --enable-thread, must be \"yes\" or \"no\""
+      fi
+      cfg_enable_threads=$cfg_value
+      ;;
     --yorick=*)
       cfg_yorick=$(cfg_opt_value "$cfg_arg")
       ;;
@@ -155,6 +167,12 @@ case "$cfg_arch" in
   * )
     cfg_exe_sfx=
 esac
+
+if test "$cfg_enable_threads" = "yes"; then
+  cfg_cflags="$cfg_cflags -DUSE_THREADS"
+else
+  cfg_cflags="$cfg_cflags -UUSE_THREADS"
+fi
 
 # Search Yorick in the path:
 if test "x$cfg_yorick" = "xyorick"; then

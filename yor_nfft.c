@@ -190,15 +190,38 @@ static long rank_index = -1L;
 static long fftw_flags_index = -1L;
 static long nfft_flags_index = -1L;
 static long complex_meas_index = -1L;
-static long num_threads_index = -1L;
+static long nthreads_index = -1L;
 
 /* Default value for cutoff number (negative means not yet determined). */
 static long default_cutoff = -1;
 
-#define INITIALIZE if (default_cutoff > 0) /* do nothing */; else initialize()
+#define INIT_THREADS 0x1
+#define INIT_OTHERS  0x2
+#define INIT_BITS    (INIT_THREADS|INIT_OTHERS)
+static unsigned int init_bits = INIT_BITS;
+static int use_threads = 0;
+
+#define INITIALIZE if ((init_bits & INIT_BITS) == 0) /* do nothing */; \
+                   else initialize()
+
 static void initialize(void)
 {
-  if (default_cutoff < 1) {
+  if ((init_bits & INIT_THREADS) != 0) {
+    /* Clear the bit before because we have only one chance to do that. */
+    init_bits &= ~INIT_THREADS;
+#ifdef USE_THREADS
+    if (fftw_init_threads() == 0) {
+      use_threads = 0;
+      y_error("initialization of FFTW threads failed");
+    } else {
+      use_threads = 1;
+    }
+#else
+    use_threads = 0;
+#endif
+  }
+
+  if ((init_bits & INIT_OTHERS) != 0) {
 #define SET_INDEX(name) name##_index =  yget_global(#name, 0)
     SET_INDEX(cutoff);
     SET_INDEX(extend);
@@ -212,17 +235,20 @@ static void initialize(void)
     SET_INDEX(rank);
     SET_INDEX(nfft_flags);
     SET_INDEX(complex_meas);
-    SET_INDEX(num_threads);
+    SET_INDEX(nthreads);
     SET_INDEX(fftw_flags);
 #undef SET_INDEX
     {
-      /* Get default size of window (in case of interrupts, must be done
-         last). */
+      /* Get default size of window. */
       nfft_plan p;
       nfft_init_1d(&p, 100, 1);
       default_cutoff = p.m;
       nfft_finalize(&p);
     }
+
+    /* Clear the initialization bit.  In case of interrupts, must be done
+       last. */
+    init_bits &= ~INIT_OTHERS;
   }
 }
 
@@ -651,6 +677,7 @@ BUILTIN(new)(int argc)
   int           rank;
   int           cutoff = -1;
   int           flags = -1;
+  int           nthreads = 1;
   unsigned int  nfft_flags, fftw_flags;
   long          num_nodes = 0;
   const double *x[MAX_RANK];
@@ -789,6 +816,11 @@ BUILTIN(new)(int argc)
       --iarg;
       if (get_scalar_int(iarg, &flags) != SUCCESS) {
         y_error("invalid value for FFTW_FLAGS keyword");
+      }
+    } else if (index == nthreads_index) {
+      --iarg;
+      if (get_scalar_int(iarg, &nthreads) != SUCCESS || nthreads < 1) {
+        y_error("invalid value for NTHREADS keyword");
       }
     } else if (index == ovr_dims_index) {
       /* Get oversampled dimensions. */
@@ -940,6 +972,14 @@ BUILTIN(new)(int argc)
   /* Create object instance. */
   op = (op_t *)ypush_obj(&op_class, sizeof(op_t));
 
+  /* Set number of threads for FFTW. */
+  if (nthreads > 1) {
+#ifdef USE_THREADS
+    fftw_plan_with_nthreads(nthreads);
+#else
+    y_warn("NFFT not compiled with support for multi-threaded FFTW");
+#endif
+  }
 
   /* Create NFFT plan. */
   make_nfft_plan(&op->plan, rank, inp_dims, ovr_dims,

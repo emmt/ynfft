@@ -41,13 +41,13 @@ EXTRA_PKGS=$(Y_EXE_PKGS)
 PKG_CLEAN=
 
 # autoload file for this package, if any
-PKG_I_START=
+PKG_I_START=${srcdir}/nfft-start.i
 # non-pkg.i include files for this package, if any
 PKG_I_EXTRA=
 
 # released files and archive name
 RELEASE_FILES = AUTHORS LICENSE Makefile NEWS README TODO \
-	nfft.i nfft-tests.i yor_nfft.c m3d_nfft.c
+	nfft.i nfft-start.i nfft-tests.i yor_nfft.c m3d_nfft.c
 RELEASE_NAME = ${srcdir}/releases/ynfft-$(RELEASE_VERSION).tar.bz2
 RELEASE_VERSION = 1.0.3
 

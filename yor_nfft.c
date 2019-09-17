@@ -657,10 +657,10 @@ BUILTIN(indgen)(int argc)
 BUILTIN(new)(int argc)
 {
   /* Oversampling factors. */
-  double        ovr_fact_buf[MAX_RANK];
   const double *ovr_fact = NULL;
   long          ovr_fact_ntot = 0;
   int           ovr_fact_rank = -1;
+  double        ovr_fact_buf[MAX_RANK];
 
   /* Oversampled dimensions. */
   const long   *ovr_dims = NULL;

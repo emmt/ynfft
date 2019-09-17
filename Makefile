@@ -49,7 +49,7 @@ PKG_I_EXTRA=
 RELEASE_FILES = AUTHORS LICENSE Makefile NEWS README TODO \
 	nfft.i nfft-start.i nfft-tests.i yor_nfft.c m3d_nfft.c
 RELEASE_NAME = ${srcdir}/releases/ynfft-$(RELEASE_VERSION).tar.bz2
-RELEASE_VERSION = 1.0.3
+RELEASE_VERSION = 1.0.4
 
 # -------------------------------- standard targets and rules (in Makepkg)
 

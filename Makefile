@@ -46,8 +46,19 @@ PKG_I_START=${srcdir}/nfft-start.i
 PKG_I_EXTRA=
 
 # released files and archive name
-RELEASE_FILES = AUTHORS LICENSE Makefile NEWS README TODO \
-	nfft.i nfft-start.i nfft-tests.i yor_nfft.c m3d_nfft.c
+RELEASE_FILES = \
+	$(srcdir)/AUTHORS \
+	$(srcdir)/LICENSE \
+	$(srcdir)/Makefile \
+	$(srcdir)/NEWS \
+	$(srcdir)/README \
+	$(srcdir)/TODO \
+	$(srcdir)/configure \
+	$(srcdir)/m3d_nfft.c \
+	$(srcdir)/nfft-start.i \
+	$(srcdir)/nfft-tests.i \
+	$(srcdir)/nfft.i \
+	$(srcdir)/yor_nfft.c
 RELEASE_NAME = ${srcdir}/releases/ynfft-$(RELEASE_VERSION).tar.bz2
 RELEASE_VERSION = 1.0.4
 
